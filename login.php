@@ -1,24 +1,27 @@
 <?php
     include('conexao.php');
+    include('usu.php');
+    
     if(empty($_POST['usuario']) || empty($_POST['senha'])){
         header('Location: login.html');
         exit();
     }
 
-    $usuario = mysqli_real_escape_string($cone, $_POST['usuario']);
-    $senha = mysqli_real_escape_string($cone, $_POST['senha']);
+    $usuario = $_POST['usuario'];
+    $senha = $_POST['senha'];
 
-    $sql = "SELECT usuario, senha FROM usuario WHERE 
-    usuario='".$usuario."' and senha='".md5($senha)."'";
+    $stmt = $cone->prepare("SELECT `usuario`, `senha` FROM `usuario` WHERE `usuario` = :usuario and `senha` = :senha");
 
-    $result = mysqli_query($cone, $sql);
+    $stmt->bindparam(":usuario", $usuario);
+    $stmt->bindValue(":senha", md5($senha));
+    $stmt->execute();
 
-    $contar = mysqli_num_rows($result);
-
-    if($contar == 1) {
-        echo "Login concluído";
-        header("Location: listar.php");
+    if($stmt->rowCount() == 0){
+        echo "Dados incorretos.";
+        ?>
+            <button><a href="login.html">Voltar</a></button>
+        <?php
     }else{
-        echo "Dados incorretos";
+        header("Location: lista.php");
     }
 ?>

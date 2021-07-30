@@ -1,24 +1,39 @@
 <?php
     include('conexao.php');
+    include('usu.php');
+    
     if(empty($_POST['nome']) || empty($_POST['usuario']) || empty($_POST['email']) || empty($_POST['senha'])){
         header('Location: cadastro.html');
         exit();
     }
 
-    $nome = mysqli_real_escape_string($cone, $_POST['nome']);
-    $usuario = mysqli_real_escape_string($cone, $_POST['usuario']);
-    $email = mysqli_real_escape_string($cone, $_POST['email']);
-    $senha = mysqli_real_escape_string($cone, $_POST['senha']);
+    $senha = md5($_POST["senha"]);
+	$usu = new Usuario($_POST['nome'], $_POST["usuario"], $_POST["email"], $senha);
+    
+    $nome = $usu->getNome();
+    $usuario = $usu->getUsuario();
+    $email = $usu->getEmail();
+    $senha = $usu->getSenha();
+    $i = 0;
 
-$sql = "INSERT INTO `usuario`(`nome`, `usuario`, `email`, `senha`) 
-    VALUES('".$nome."','".$usuario."','".$email."','".md5($senha)."')";
+    $stmt = $cone->prepare("INSERT INTO `usuario`(`nome`, `usuario`, `email`, `senha`) 
+    VALUES (:nome, :usuario, :email, :senha)");
 
-    if ($cone->query($sql) === TRUE) {
-        echo "Cadastro realizado";
-    } else {
-    echo "Ocorreu um erro: " . $sql . "<br>" . $cone->error;
+    $fetch = "SELECT `nome`, `usuario` FROM `usuario`";
+    $resultado = $cone->query($fetch);
+
+    while($row = $resultado->fetch()) {
+        if($row['usuario'] == $usu || $row['email'] == $email){
+            $i++;
+        }
     }
 
-    $cone->close();
-?>
+    if($i>0){
+        echo "E-mail ou Usuário já existem.";
+    }else{
+        $stmt->execute(array(':nome' => $nome, ':usuario' => $usuario, ':email' => $email, ':senha'=> $senha));
 
+        echo "Cadastro efetuado!";
+        header("Location: login.html");
+    }
+?>

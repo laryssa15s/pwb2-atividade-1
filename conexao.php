@@ -1,12 +1,11 @@
 <?php
-$nomehost = "localhost";
-$banco = "AVA1";
-$usuario = "root";
-$senha = "";
+  try {
+    $usuario = "root";
+    $senha = "";
 
-$cone = new mysqli($nomehost, $usuario,$senha, $banco);
-
-if($cone->connect_error){
-  die("Erro na conexão ". $cone->connect_error);
-}
+    $cone = new PDO('mysql:host=localhost;dbname=AVA2', $usuario, $senha);
+    $cone->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+  } catch(PDOException $c) {
+    echo 'Ocorreu uma erro e a conexão não foi efetuada ' . $c->getMessage();
+  }
 ?>
